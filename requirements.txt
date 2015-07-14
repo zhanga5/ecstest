@@ -9,4 +9,5 @@ mock>=1.0.1
 pyzmq>=14.6.0
 multi-mechanize
 ipaddress>=1.0.7
-etchosts
+# etchosts
+isodate
