@@ -1,0 +1,40 @@
+1. Two method to download from RCS ECSTEST Git repo
+
+1.1 Use git clone command
+# git clone https://github.emcrubicon.com/ASD-ECS/ecstest.git
+
+1.2 On the bottom-right of https://github.emcrubicon.com/ASD-ECS/ecstest,
+click the button 'Download ZIP' and unzip manually.
+
+1.3 If has no access to RCS Github, can use alternative URL at 
+http://teamcity.core.rcsops.com:3000/ecstest/ecstest
+
+2. install all required packages
+# pip install -r requirements.txt
+(advanced user could consider to use virtualenv.
+see http://docs.python-guide.org/en/latest/dev/virtualenvs/)
+
+3. prepare config files. config/*.cfg are examples.
+see config/sample.cfg for each configurable option.
+ecstest/config.py has a more complete list.
+Use https://github.emcrubicon.com/CloudLabs/LabEnvironments/wiki to get
+lab ECS system access information.
+
+4. run tests
+(Make sure in the top-level directory of the ecstest project)
+
+4.1 run functional tests. run this command to get more information.
+# ./runtest -h
+
+4.2 run performance tests. There are multiple performance tests under 
+ecstest/performance. Each time can only run one test. Please adjust the
+command line accordingly.
+# source config/xyz.cfg
+# multimech-run ecstest/performance/listbucket/
+
+4.3 See the results of performance tests
+# cd ecstest/performance/listbucket/results
+# python -m SimpleHTTPServer 8888
+Use a browser to visit 'http://127.0.0.1:8888'.
+See the result.html in the directory of results_yy.mm.dd_hh.MM.ss.
+

@@ -1,0 +1,10 @@
+Tips on writing test cases
+
+* keep test case short with expected run time to be < 1min for each test case.
+* when each file contains more than 20 test cases, consider to refactor and split
+* any error will be raised as exception. no need to have overly complex exception catch and handling code
+* learn from examples
+* each test case function shall have a JIRA ID associated with it
+* use comments wisely. Not to explain what to do since code already did. Comment is to explain a complex data structure, an algorithm, or why choose this implementation vs. another.
+* all test case file need to end with _test.py
+

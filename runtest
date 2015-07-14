@@ -1,0 +1,158 @@
+#!/bin/bash
+
+
+usage() {
+    cat << END
+Usage:
+  $ runtest [<options>] [<cases>]
+
+  [Options]
+    -c <config file>: specify the config file name. The file is under config/.
+                      The default value is default.cfg
+    -t <tag>: run test cases with this tag
+    --verbose: verbose output
+    --no-stop: don't stop if any case fails
+
+  [Cases]
+    If this parameter is not specified, find all cases under current directory
+      and run them.
+    Or it may be specifiled as:
+      [<path>]<filename>[:<class>[.<function>]]
+    For example:
+      - A file name: object_io_test.py
+      - A full path: ecstest/testcases/dataplan/object_io_test.py
+      - A path/file with a test class/function:
+          object_io_test.py:TestObjectPostGetDelete
+          object_io_test.py:TestObjectPostGetDelete.test_1_byte_size
+          ecstest/testcases/dataplane/object_io_test.py:TestObjectPostGetDelete
+          ecstest/testcases/dataplane/object_io_test.py:TestObjectPostGetDelete.test_1_byte_size
+      - A path/file with wildcard: object_io_*
+
+  Examples:
+    ./runtest 
+      This command runs all cases
+
+    ./runtest object_io_test.py
+      This command runs a single case object_io_test.py.
+
+    ./runtest ecstest/testcases/dataplane/object_io_test.py
+      Full path is optional.
+
+    ./runtest object_io_test.py:TestObjectPostGetDelete
+    ./runtest object_io_test.py:TestObjectPostGetDelete.test_1_byte_size
+      Or run a single class/function. Full path is optional.
+
+    ./runtest dataplane
+    ./runtest ecstest/testcases/dataplane
+      Or run all cases under a directory
+
+    ./runtest -c fakes3.cfg
+      Change config information (account, endpoint, etc.) on the fly
+
+    ./runtest -t objectio
+      Specify tags on the fly
+
+    ./runtest --verbose
+      Print debug level log messages
+
+    ./runtest object_io_*
+      Wildcard is supported.
+
+    ./runtest -c awss3.cfg -t objectio --verbose dataplane
+      Compose parameters
+
+END
+}
+
+CONFIG_FILE=default.cfg
+NOSECMD="nosetests --with-timer --with-xunit --nocapture"
+
+OPTS=`getopt -o c:t:h --long config,tags,verbose,no-stop,help -- "$@"`
+while true; do
+    case "$1" in
+        -c|--config)
+            CONFIG_FILE=$2
+            shift 2;;
+        -t|--tag)
+            TAGS=$2
+            shift 2;;
+        --verbose)
+            export ECSTEST_VERBOSE_OUTPUT=1
+            shift;;
+        --no-stop)
+            export ECSTEST_NO_STOP=1
+            shift;;
+        --)
+            shift
+            break;;
+        -h|--help)
+            usage
+            exit 0;;
+        *)
+            break;;
+    esac
+done
+
+echo "==============================================="
+echo "Config file : $CONFIG_FILE"
+echo "Tags        : $TAGS"
+echo "Verbose     : $ECSTEST_VERBOSE_OUTPUT"
+echo "Case/dir    : $1"
+echo "==============================================="
+
+if [ -f $CONFIG_FILE ]; then
+    source $CONFIG_FILE
+elif [ -f config/$CONFIG_FILE ]; then
+    source config/$CONFIG_FILE
+else
+    echo "Cannot find config file: $CONFIG_FILE"
+    exit 1
+fi
+
+if [ "$ECSTEST_NO_STOP" != "1" ]; then
+    NOSECMD="$NOSECMD -x"
+fi
+
+if [ "$ECSTEST_VERBOSE_OUTPUT" = "1" ];then
+    NOSECMD="$NOSECMD -v"
+fi
+
+if [ -n "$TAGS" ]; then
+    NOSECMD="$NOSECMD -a tags=$TAGS"
+fi
+
+env | grep ^ECSTEST_
+echo "NOSECMD=$NOSECMD"
+echo "==============================================="
+
+if [ -z "$1" ]; then
+    # Run all cases under current dir
+    echo "Run all cases..."
+    $NOSECMD
+elif [ -f "$1" ] || [ -d "$1" ]; then
+    # Run a dir/file
+    echo "Run case(s): $1 ..."
+    $NOSECMD $1
+else
+    fn=${1/:*/}
+    if [ -f $fn ]; then
+        echo "Run case: $1 ..."
+        $NOSECMD $1
+    else
+        cf=${1#*:}
+        if [ "$cf" = "$1" ]; then
+            cf=
+        fi
+        echo "Searching $fn ..."
+        for f in `find . -name $fn ! -name '*.pyc' ! -path './.git/*'`; do
+            if [ -z "$cf" ]; then
+                c=$f
+            else
+                c=$f:$cf
+            fi
+            echo "Run case: $c ..."
+            $NOSECMD $c
+        done
+    fi
+fi
+
