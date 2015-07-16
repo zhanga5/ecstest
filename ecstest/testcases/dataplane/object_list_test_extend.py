@@ -80,7 +80,7 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
 
     @triage
     # ecs marker issue: the response Keys contain the marker ,
-    #   what is not consistent with aws-s3 which don't contain the marker.
+    #   that is not consistent with aws-s3 which don't contain the marker.
     # fakes3 MaxKeys issue: the response MaxKeys always be 1000
     #   no matter what the request max_keys are.
     @not_supported('fakes3', 'ecs')  # fakes3 MaxKeys issue, ecs marker issue
