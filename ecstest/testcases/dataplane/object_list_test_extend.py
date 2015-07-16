@@ -13,6 +13,8 @@
 Author: Rubicon ISE team
 '''
 
+
+from boto.s3.bucket import Bucket
 from nose.plugins.attrib import attr
 from nose.tools import eq_ as eq
 
@@ -43,6 +45,7 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
 
         logger.debug("Create bucket: %s", bucket_name)
         bucket = self.data_conn.create_bucket(bucket_name)
+        eq(isinstance(bucket, Bucket), True)
 
         return bucket
 
