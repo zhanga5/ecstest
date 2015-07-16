@@ -13,7 +13,6 @@
 Author: Rubicon ISE team
 '''
 
-
 from boto.s3.bucket import Bucket
 from nose.plugins.attrib import attr
 from nose.tools import eq_ as eq
