@@ -10,3 +10,4 @@ pyzmq>=14.6.0
 multi-mechanize
 ipaddress>=1.0.7
 etchosts
+isodate
