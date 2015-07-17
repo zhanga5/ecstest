@@ -101,7 +101,8 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
         keyname2 = keyname.get_unique_key_name()
         keyname3 = keyname.get_unique_key_name()
 
-        self._create_keys(keys=[keyname1, keyname2, keyname3])
+        keynames = [keyname1, keyname2, keyname3]
+        self._create_keys(keys=keynames)
 
         # bucket.list() is high-level and will not let us set max-keys,
         # using it would require using >1000 keys to test, and that would
@@ -112,10 +113,12 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
         eq(len(l), 2)
         eq(l.is_truncated, True)
         names = [e.name for e in l]
-        eq(names, [keyname1, keyname2])
+
+        keynames = sorted(keynames)
+        eq(names, keynames[:2])
 
         l = self.bucket.get_all_keys(max_keys=2, marker=names[-1])
         eq(len(l), 1)
         eq(l.is_truncated, False)
         names = [e.name for e in l]
-        eq(names, [keyname3])
+        eq(names, keynames[2:])
