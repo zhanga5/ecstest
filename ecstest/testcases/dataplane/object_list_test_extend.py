@@ -17,9 +17,12 @@ from boto.s3.bucket import Bucket
 from nose.plugins.attrib import attr
 from nose.tools import eq_ as eq
 
-from ecstest import tag, testbase, bucketname
-from ecstest.logger import logger
+from ecstest import bucketname
+from ecstest import keyname
+from ecstest import tag
+from ecstest import testbase
 from ecstest import utils
+from ecstest.logger import logger
 from ecstest.dec import triage
 from ecstest.dec import not_supported
 
@@ -58,7 +61,8 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
             key.set_contents_from_string(s)
 
     @triage
-    # corresponding tests: test_bucket_list_distinct().
+    # port from test case: test_bucket_list_distinct() of https://github.com/
+    #   ceph/s3-tests/blob/master/s3tests/functional/test_s3.py
     def test_object_list_from_distinct_bucket(self):
         """
         operation: list
@@ -67,8 +71,10 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
         bucket1 = self._create_bucket()
         bucket2 = self._create_bucket()
 
-        key = bucket1.new_key('asdf')
-        key.set_contents_from_string('asdf')
+        name = keyname.get_unique_key_name()
+        key = bucket1.new_key(name)
+        key.set_contents_from_string(name)
+
         l = bucket2.list()
         l = list(l)
         eq(l, [])
@@ -84,7 +90,8 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
     # fakes3 MaxKeys issue: the response MaxKeys always be 1000
     #   no matter what the request max_keys are.
     @not_supported('fakes3', 'ecs')  # fakes3 MaxKeys issue, ecs marker issue
-    # corresponding tests: test_bucket_list_many().
+    # port from test case: test_bucket_list_many() of https://github.com/
+    #   ceph/s3-tests/blob/master/s3tests/functional/test_s3.py
     def test_object_list_many(self):
         """
         operation: list
