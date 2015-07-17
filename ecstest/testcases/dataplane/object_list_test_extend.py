@@ -22,9 +22,9 @@ from ecstest import keyname
 from ecstest import tag
 from ecstest import testbase
 from ecstest import utils
-from ecstest.logger import logger
-from ecstest.dec import triage
 from ecstest.dec import not_supported
+from ecstest.dec import triage
+from ecstest.logger import logger
 
 
 @attr(tags=[tag.DATA_PLANE, tag.OBJECT_IO])
@@ -97,7 +97,11 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
         operation: list
         assertion: pagination w/max_keys=2, no marker
         """
-        self._create_keys(keys=['foo', 'bar', 'baz'])
+        keyname1 = keyname.get_unique_key_name()
+        keyname2 = keyname.get_unique_key_name()
+        keyname3 = keyname.get_unique_key_name()
+
+        self._create_keys(keys=[keyname1, keyname2, keyname3])
 
         # bucket.list() is high-level and will not let us set max-keys,
         # using it would require using >1000 keys to test, and that would
@@ -108,10 +112,10 @@ class TestObjectList(testbase.EcsDataPlaneTestBase):
         eq(len(l), 2)
         eq(l.is_truncated, True)
         names = [e.name for e in l]
-        eq(names, ['bar', 'baz'])
+        eq(names, [keyname1, keyname2])
 
         l = self.bucket.get_all_keys(max_keys=2, marker=names[-1])
         eq(len(l), 1)
         eq(l.is_truncated, False)
         names = [e.name for e in l]
-        eq(names, ['foo'])
+        eq(names, [keyname3])
